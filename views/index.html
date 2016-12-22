@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>備忘</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link href="/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <script src="/bootstrap/js/jquery.min.js"></script>
+    <script src="/bootstrap/js/bootstrap.min.js"></script>
+</head>
+
+<body style="padding:50px;background-color:#ccc">
+    <div class="container" style="background-color:#fff;padding:50px;">
+        <button type="button" class="btn btn-info" style="float:right;margin:10px" onClick="location.href='/add.html'">添加</button>
+
+        </button>
+        <table class="table table-hover table-condensed">
+            {{if gt (.Datas|len) 0}}
+            <tr>
+                <td>编号</td>
+                <td>标题</td>
+                <td>内容</td>
+                <td>发布时间</td>
+                <td>操作</td>
+            </tr>
+            {{range .Datas}}
+            <tr>
+                <td>{{.Id}}</td>
+                <td>{{.Title}}</td>
+                <td>{{.Content}}</td>
+                <td>{{.Time}}</td>
+                <td><a href="/?del={{.Id}}">刪除</a></td>
+            </tr>{{end}} {{else}}
+            <div style="text-align:center">現在還沒有數據，趕緊來添加第一條消息吧</div> {{end}}
+        </table>
+
+    </div>
+    <!--//container-->
+</body>
+
+</html>
