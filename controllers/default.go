@@ -33,13 +33,13 @@ type AndroidCommitController struct {
 type AndroidAllController struct {
 	beego.Controller
 }
-type AndroidDelController struct {
-	beego.Controller
-}
 type MainAddController struct {
 	beego.Controller
 }
 type MainMsgController struct {
+	beego.Controller
+}
+type AndroidChangeController struct {
 	beego.Controller
 }
 
@@ -89,6 +89,7 @@ type anData struct {
 	Content    string `form:"content"`
 	CreateTime string
 	LastTime   string
+	State      int `form:"state"` //0:init,1:finished,2:del
 }
 
 // 处理android客户端提交过来的数据
@@ -105,6 +106,23 @@ func (c *AndroidCommitController) Post() {
 			return
 		}
 		c.Ctx.WriteString(strconv.Itoa(int(pk)))
+	}
+}
+func (c *AndroidChangeController) Post() {
+	d := anData{}
+	if err := c.ParseForm(&d); err != nil {
+		log.Println(err.Error())
+	} else {
+		pk, e := o.Update(&d, "State")
+		if e != nil {
+			log.Println(e.Error())
+			return
+		}
+		if pk > 0 {
+			c.Ctx.WriteString(strconv.Itoa(int(d.Id)))
+		} else {
+			c.Ctx.WriteString("更新失败：影响行数为 0 ")
+		}
 	}
 }
 func (c *AndroidUpdateController) Post() {
@@ -130,20 +148,11 @@ func (c *AndroidAllController) Get() {
 	c.ServeJSON()
 }
 
-func (c *AndroidDelController) Get() {
-	err := delById(c.Input().Get("id"))
-	if err != nil {
-		c.Ctx.WriteString("0")
-	} else {
-		c.Ctx.WriteString("1")
-	}
-}
-
 /* ---------------------- ------------------------*/
-// 獲取所有
+// 獲取所有,除了删除的
 func getAll() []*anData {
 	var datas []*anData
-	_, err := o.QueryTable("an_data").All(&datas)
+	_, err := o.QueryTable("an_data").Filter("state__in", 0, 1).All(&datas)
 	if err != nil {
 		log.Println(err.Error())
 	}
