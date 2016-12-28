@@ -21,6 +21,9 @@ func init() {
 	o.Using("remind")
 }
 
+type AndroidUpdateController struct {
+	beego.Controller
+}
 type MainController struct {
 	beego.Controller
 }
@@ -55,7 +58,8 @@ func (c *MainAddController) Post() {
 		log.Println(err.Error())
 		c.Redirect("/msg?msg="+"服務器出錯啦", 302)
 	} else {
-		d.Time = getCurTime()
+		d.CreateTime = getCurTime()
+		d.LastTime = d.CreateTime
 		_, e := o.Insert(&d)
 		if e != nil {
 			log.Println(e.Error())
@@ -80,10 +84,11 @@ func (c *MainController) Get() {
 }
 
 type anData struct {
-	Id      int
-	Title   string `form:"title"`
-	Content string `form:"content"`
-	Time    string
+	Id         int    `form:"id"`
+	Title      string `form:"title"`
+	Content    string `form:"content"`
+	CreateTime string
+	LastTime   string
 }
 
 // 处理android客户端提交过来的数据
@@ -92,13 +97,32 @@ func (c *AndroidCommitController) Post() {
 	if err := c.ParseForm(&d); err != nil {
 		log.Println(err.Error())
 	} else {
-		d.Time = getCurTime()
+		d.CreateTime = getCurTime()
+		d.LastTime = d.CreateTime
 		pk, e := o.Insert(&d)
 		if e != nil {
 			log.Println(e.Error())
 			return
 		}
 		c.Ctx.WriteString(strconv.Itoa(int(pk)))
+	}
+}
+func (c *AndroidUpdateController) Post() {
+	d := anData{}
+	if err := c.ParseForm(&d); err != nil {
+		log.Println(err.Error())
+	} else {
+		d.LastTime = getCurTime()
+		pk, e := o.Update(&d, "Content", "LastTime")
+		if e != nil {
+			log.Println(e.Error())
+			return
+		}
+		if pk > 0 {
+			c.Ctx.WriteString(strconv.Itoa(int(d.Id)))
+		} else {
+			c.Ctx.WriteString("更新失败：影响行数为 0 ")
+		}
 	}
 }
 func (c *AndroidAllController) Get() {
